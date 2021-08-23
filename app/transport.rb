@@ -1,5 +1,6 @@
 class Transport
   include Comparable
+  include ::CONST
 
   attr_accessor :max_weight, :speed, :available
 

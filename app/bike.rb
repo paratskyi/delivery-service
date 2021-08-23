@@ -3,9 +3,9 @@ class Bike < Transport
 
   def initialize
     super(
-      max_weight: CONST::BIKE_SPEED,
-      speed: CONST::BIKE_MAX_WEIGHT
+      max_weight: BIKE_SPEED,
+      speed: BIKE_MAX_WEIGHT
     )
-    @max_distance = CONST::BIKE_MAX_DISTANCE
+    @max_distance = BIKE_MAX_DISTANCE
   end
 end

@@ -6,6 +6,4 @@ module CONST
 
   CAR_MAX_WEIGHT = 100
   CAR_SPEED = 50
-
-  freeze
 end
