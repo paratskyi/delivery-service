@@ -8,7 +8,7 @@ class DeliveryService
   end
 
   def get_transport(weight:, distance:)
-    return if available_bikes.empty? && available_cars.empty? || weight > CAR_MAX_WEIGHT
+    check_transport weight
 
     if weight <= BIKE_MAX_WEIGHT && distance <= BIKE_MAX_DISTANCE && available_bikes.any?
       available_bikes.first
@@ -39,5 +39,13 @@ class DeliveryService
 
   def car_count
     rand(10)
+  end
+
+  def check_transport(weight)
+    if available_bikes.empty? && available_cars.empty? || weight > CAR_MAX_WEIGHT
+      raise StandardError, 'No available transport'
+    end
+  rescue StandardError => e
+    puts e.message
   end
 end
