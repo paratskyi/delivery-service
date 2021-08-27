@@ -23,9 +23,9 @@ class Transport
   end
 
   def <=>(other)
+    return -1 if delivery_speed_ratio < other.delivery_speed_ratio
     return 0 if delivery_speed_ratio == other.delivery_speed_ratio
-    return 1 if delivery_speed_ratio < other.delivery_speed_ratio
-    return -1 if delivery_speed_ratio > other.delivery_speed_ratio
+    return 1 if delivery_speed_ratio > other.delivery_speed_ratio
   end
 
   def delivery_speed_ratio
