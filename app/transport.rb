@@ -1,5 +1,6 @@
 class Transport
   include Comparable
+  include TransportHelper
   include ::CONST
 
   attr_accessor :max_weight, :speed, :available
@@ -23,12 +24,16 @@ class Transport
   end
 
   def <=>(other)
-    return -1 if delivery_speed_ratio < other.delivery_speed_ratio
-    return 0 if delivery_speed_ratio == other.delivery_speed_ratio
-    return 1 if delivery_speed_ratio > other.delivery_speed_ratio
+    return 0 if eql_transport?(other)
+    return 1 if @max_weight > other.max_weight
+    return -1 if @max_weight < other.max_weight
+    return 1 if max_distance_for(self) > max_distance_for(other)
+    return -1 if max_distance_for(self) < max_distance_for(other)
   end
 
-  def delivery_speed_ratio
-    @speed / @max_weight
+  private
+
+  def eql_transport?(other)
+    @max_weight == other.max_weight && max_distance_for(self) == max_distance_for(other)
   end
 end

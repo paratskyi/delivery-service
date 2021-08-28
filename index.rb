@@ -1,6 +1,8 @@
 require 'byebug'
 require 'ffaker'
 require_relative 'app/lib/const'
+require_relative 'app/lib/support'
+require_relative 'app/lib/transport_helper'
 require_relative 'app/transport'
 require_relative 'app/bike'
 require_relative 'app/car'
