@@ -10,16 +10,13 @@ class DeliveryService
   end
 
   def get_transport(weight:, distance:)
-    check_transport weight
+    check_delivery_possibility(weight)
 
-    if weight <= BIKE_MAX_WEIGHT && distance <= BIKE_MAX_DISTANCE && available_bikes.any?
-      available_bikes.first
-    elsif weight <= CAR_MAX_WEIGHT && available_cars.any?
-      available_cars.first
-    else
-      @errors.push 'No available transport'
-      nil
-    end
+    transport = sorted_available_transport_park.find { |t| t.max_weight >= weight && max_distance_for(t) >= distance }
+
+    raise_transport_error! unless transport
+
+    transport
   end
 
   def send_transport(transport)
@@ -29,6 +26,14 @@ class DeliveryService
   end
 
   private
+
+  def sorted_available_transport_park
+    available_transports.sort_by { |transport| [transport.max_weight, max_distance_for(transport)] }
+  end
+
+  def available_transports
+    transport_park.select(&:available)
+  end
 
   def available_bikes
     transport_park.select { |transport| transport.bike? && transport.available }
@@ -48,10 +53,12 @@ class DeliveryService
     rand(10)
   end
 
-  def check_transport(weight)
-    if available_bikes.empty? && available_cars.empty? || weight > CAR_MAX_WEIGHT
-      raise StandardError, 'No available transport'
-    end
+  def check_delivery_possibility(weight)
+    raise_transport_error! if available_transports.empty? || weight > MAX_AVAILABLE_WEIGHT
+  end
+
+  def raise_transport_error!
+    raise StandardError, 'No available transport'
   rescue StandardError => e
     @errors.push e.message
   end
