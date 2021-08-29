@@ -12,7 +12,7 @@ class Transport
   end
 
   def delivery_time(distance)
-    distance / speed
+    distance.to_f / speed
   end
 
   def bike?
@@ -25,8 +25,8 @@ class Transport
 
   def <=>(other)
     return 0 if eql_transport?(other)
-    return 1 if @max_weight > other.max_weight
-    return -1 if @max_weight < other.max_weight
+    return 1 if max_weight > other.max_weight
+    return -1 if max_weight < other.max_weight
     return 1 if max_distance_for(self) > max_distance_for(other)
     return -1 if max_distance_for(self) < max_distance_for(other)
   end
@@ -34,6 +34,6 @@ class Transport
   private
 
   def eql_transport?(other)
-    @max_weight == other.max_weight && max_distance_for(self) == max_distance_for(other)
+    max_weight == other.max_weight && max_distance_for(self) == max_distance_for(other)
   end
 end

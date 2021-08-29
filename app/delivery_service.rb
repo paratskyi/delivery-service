@@ -1,10 +1,12 @@
 class DeliveryService
+  include TransportHelper
   include ::CONST
 
-  attr_reader :transport_park
+  attr_reader :transport_park, :errors
 
   def initialize
     @transport_park = generate_transport_park
+    @errors = []
   end
 
   def get_transport(weight:, distance:)
@@ -12,23 +14,28 @@ class DeliveryService
 
     if weight <= BIKE_MAX_WEIGHT && distance <= BIKE_MAX_DISTANCE && available_bikes.any?
       available_bikes.first
-    else
+    elsif weight <= CAR_MAX_WEIGHT && available_cars.any?
       available_cars.first
+    else
+      @errors.push 'No available transport'
+      nil
     end
   end
 
   def send_transport(transport)
+    raise ArgumentError, 'Transport should be present' unless transport
+
     transport.available = false
   end
 
   private
 
   def available_bikes
-    @transport_park.select { |transport| transport.bike? && transport.available }
+    transport_park.select { |transport| transport.bike? && transport.available }
   end
 
   def available_cars
-    @transport_park.select { |transport| transport.car? && transport.available }
+    transport_park.select { |transport| transport.car? && transport.available }
   end
 
   def generate_transport_park
@@ -46,6 +53,6 @@ class DeliveryService
       raise StandardError, 'No available transport'
     end
   rescue StandardError => e
-    puts e.message
+    @errors.push e.message
   end
 end
