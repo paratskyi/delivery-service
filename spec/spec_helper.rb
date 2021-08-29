@@ -18,6 +18,8 @@ require 'simplecov'
 SimpleCov.start
 
 require_relative '../app/lib/dependencies'
+include ::CONST
+include TransportHelper
 
 RSpec.configure do |config|
   # rspec-expectations config goes here. You can use an alternate
