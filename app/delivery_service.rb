@@ -1,34 +1,46 @@
 class DeliveryService
+  include TransportHelper
   include ::CONST
 
-  attr_reader :transport_park
+  attr_reader :transport_park, :errors
 
   def initialize
     @transport_park = generate_transport_park
+    @errors = []
   end
 
   def get_transport(weight:, distance:)
-    check_transport weight
+    check_delivery_possibility(weight)
 
-    if weight <= BIKE_MAX_WEIGHT && distance <= BIKE_MAX_DISTANCE && available_bikes.any?
-      available_bikes.first
-    else
-      available_cars.first
-    end
+    transport = sorted_available_transport_park.find { |t| t.max_weight >= weight && max_distance_for(t) >= distance }
+
+    raise_transport_error! unless transport
+
+    transport
   end
 
   def send_transport(transport)
+    raise ArgumentError, 'Transport should be present' unless transport
+
     transport.available = false
   end
 
   private
 
+  def sorted_available_transport_park
+    available_transports.sort_by { |transport| [transport.max_weight, max_distance_for(transport)] }
+  end
+
+  def available_transports
+    transport_park.select(&:available)
+  end
+
   def available_bikes
-    @transport_park.select { |transport| transport.bike? && transport.available }
+    transport_park.select { |transport| transport.bike? && transport.available }
   end
 
   def available_cars
-    @transport_park.select { |transport| transport.car? && transport.available }
+    transport_park.select { |transport| transport.car? && transport.available }
   end
 
   def generate_transport_park
@@ -41,11 +53,13 @@ class DeliveryService
     rand(10)
   end
 
-  def check_transport(weight)
-    if available_bikes.empty? && available_cars.empty? || weight > CAR_MAX_WEIGHT
-      raise StandardError, 'No available transport'
-    end
+  def check_delivery_possibility(weight)
+    raise_transport_error! if available_transports.empty? || weight > MAX_AVAILABLE_WEIGHT
+  end
+
+  def raise_transport_error!
+    raise StandardError, 'No available transport'
   rescue StandardError => e
-    puts e.message
+    @errors.push e.message
   end
 end

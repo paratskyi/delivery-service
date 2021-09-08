@@ -1,5 +1,6 @@
 class Transport
   include Comparable
+  include TransportHelper
   include ::CONST
 
   attr_accessor :max_weight, :speed, :available
@@ -11,7 +12,7 @@ class Transport
   end
 
   def delivery_time(distance)
-    distance / speed
+    distance.to_f / speed
   end
 
   def bike?
@@ -23,12 +24,11 @@ class Transport
   end
 
   def <=>(other)
-    return 0 if delivery_speed_ratio == other.delivery_speed_ratio
-    return 1 if delivery_speed_ratio < other.delivery_speed_ratio
-    return -1 if delivery_speed_ratio > other.delivery_speed_ratio
-  end
+    return 1 if max_weight > other.max_weight
+    return -1 if max_weight < other.max_weight
+    return 1 if max_distance_for(self) > max_distance_for(other)
+    return -1 if max_distance_for(self) < max_distance_for(other)
 
-  def delivery_speed_ratio
-    @speed / @max_weight
+    0
   end
 end

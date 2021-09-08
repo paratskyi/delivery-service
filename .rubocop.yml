@@ -1,5 +1,12 @@
 AllCops:
   NewCops: enable
+  Exclude:
+    - 'spec/spec_helper.rb'
+
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/*.rb'
+    - 'spec/**/*.rb'
 
 Style/FrozenStringLiteralComment:
   Enabled: false

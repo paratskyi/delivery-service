@@ -1,6 +1,8 @@
 source 'https://rubygems.org'
 
-gem 'byebug', '~> 11.1', '>= 11.1.3'
+gem 'byebug', '~> 11.1', '>= 11.1.3', require: false
 gem 'fasterer', '~> 0.1.9'
-gem 'rubocop', require: false
 gem 'ffaker', '~> 2.19'
+gem 'rspec', '~> 3.10'
+gem 'rubocop', require: false
+gem 'simplecov', '~> 0.21.2', require: false
