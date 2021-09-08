@@ -24,16 +24,11 @@ class Transport
   end
 
   def <=>(other)
-    return 0 if eql_transport?(other)
     return 1 if max_weight > other.max_weight
     return -1 if max_weight < other.max_weight
     return 1 if max_distance_for(self) > max_distance_for(other)
     return -1 if max_distance_for(self) < max_distance_for(other)
-  end
 
-  private
-
-  def eql_transport?(other)
-    max_weight == other.max_weight && max_distance_for(self) == max_distance_for(other)
+    0
   end
 end

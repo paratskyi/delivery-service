@@ -49,7 +49,6 @@ RSpec.describe DeliveryService do
         expect(subject).to be_nil
         expect(delivery_service.errors).not_to be_empty
         expect(delivery_service.errors.first).to eq 'No available transport'
-        # expect { subject }.to raise_error(StandardError, 'No available transport')
       end
     end
 
