@@ -4,15 +4,31 @@ class Transport
   include ::CONST
 
   attr_accessor :max_weight, :speed, :available
+  attr_reader :number_of_deliveries, :delivery_cost, :location
 
-  def initialize(max_weight:, speed:)
+  def initialize(max_weight:, speed:, delivery_cost:, number_of_deliveries: 0)
     @max_weight = max_weight
     @speed = speed
     @available = true
+    @location = LOCATION.find_by_value('In garage')
+    @delivery_cost = delivery_cost
+    @number_of_deliveries = number_of_deliveries
+  end
+
+  def location=(value)
+    raise ArgumentError, "'#{value}' is invalid for location attribute" unless LOCATION.include?(value)
+
+    @location = LOCATION.find_by_value(value)
   end
 
   def delivery_time(distance)
     distance.to_f / speed
+  end
+
+  def send_transport
+    @number_of_deliveries += 1
+    self.location = 'On route'
+    self.available = false
   end
 
   def bike?

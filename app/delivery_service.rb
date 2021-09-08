@@ -22,7 +22,7 @@ class DeliveryService
   def send_transport(transport)
     raise ArgumentError, 'Transport should be present' unless transport
 
-    transport.available = false
+    transport.send_transport
   end
 
   private
