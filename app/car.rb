@@ -1,6 +1,8 @@
 class Car < Transport
   attr_reader :registration_number
 
+  @instances = []
+
   def initialize(registration_number:)
     super(
       max_weight: CAR_MAX_WEIGHT,

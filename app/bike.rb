@@ -1,6 +1,8 @@
 class Bike < Transport
   attr_reader :max_distance
 
+  @instances = []
+
   def initialize
     super(
       max_weight: BIKE_MAX_WEIGHT,

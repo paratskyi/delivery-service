@@ -6,6 +6,8 @@ class Transport
   attr_accessor :max_weight, :speed, :available
   attr_reader :number_of_deliveries, :delivery_cost, :location
 
+  @instances = []
+
   def initialize(max_weight:, speed:, delivery_cost:, number_of_deliveries: 0)
     @max_weight = max_weight
     @speed = speed
@@ -13,6 +15,18 @@ class Transport
     @location = LOCATION.find_by_value('In garage')
     @delivery_cost = delivery_cost
     @number_of_deliveries = number_of_deliveries
+    Transport.add_instance self
+  end
+
+  class << self
+    def add_instance(instance)
+      @instances.push instance
+      instance.class.instance_variable_get(:@instances).push instance
+    end
+
+    def all
+      @instances
+    end
   end
 
   def location=(value)

@@ -95,6 +95,113 @@ RSpec.describe Transport do
     end
   end
 
+  describe '#all' do
+    subject { klass.all }
+
+    shared_examples :return_correct_transport_instances do
+      it 'returns correct transport instances' do
+        expect(subject.count).to eq transport_instances.count
+        expect(subject).to instances_exact_match_array transport_instances
+      end
+    end
+
+    shared_examples :return_empty_transport_instances do
+      it 'returns empty array of transport instances' do
+        expect(subject.count).to eq 0
+        expect(subject).to be_empty
+      end
+    end
+
+    before do
+      klass.instance_variable_set(:@instances, [])
+    end
+
+    let!(:car_instances) { (1..5).map { Car.new(registration_number: FFaker::Vehicle.vin) } }
+    let!(:bike_instances) { (1..5).map { Bike.new } }
+
+    context 'when transport_instances with all transport types' do
+      context 'Bike.all' do
+        let(:klass) { Bike }
+        let(:transport_instances) { bike_instances }
+        it_behaves_like :return_correct_transport_instances
+      end
+
+      context 'Car.all' do
+        let(:klass) { Car }
+        let(:transport_instances) { car_instances }
+        it_behaves_like :return_correct_transport_instances
+      end
+
+      context 'Transport.all' do
+        let(:klass) { Transport }
+        let(:transport_instances) { car_instances + bike_instances }
+        it_behaves_like :return_correct_transport_instances
+      end
+    end
+
+    context 'when transport_instances without bikes' do
+      let!(:bike_instances) { [] }
+
+      context 'Bike.all' do
+        let(:klass) { Bike }
+        it_behaves_like :return_empty_transport_instances
+      end
+
+      context 'Car.all' do
+        let(:klass) { Car }
+        let(:transport_instances) { car_instances }
+        it_behaves_like :return_correct_transport_instances
+      end
+
+      context 'Transport.all' do
+        let(:klass) { Transport }
+        let(:transport_instances) { car_instances + bike_instances }
+        it_behaves_like :return_correct_transport_instances
+      end
+    end
+
+    context 'when transport_instances without cars' do
+      let!(:car_instances) { [] }
+
+      context 'Bike.all' do
+        let(:klass) { Bike }
+        let(:transport_instances) { bike_instances }
+        it_behaves_like :return_correct_transport_instances
+      end
+
+      context 'Car.all' do
+        let(:klass) { Car }
+        it_behaves_like :return_empty_transport_instances
+      end
+
+      context 'Transport.all' do
+        let(:klass) { Transport }
+        let(:transport_instances) { car_instances + bike_instances }
+        it_behaves_like :return_correct_transport_instances
+      end
+    end
+
+    context 'when empty transport_instances' do
+      let!(:bike_instances) { [] }
+      let!(:car_instances) { [] }
+
+      context 'Bike.all' do
+        let(:klass) { Bike }
+        it_behaves_like :return_empty_transport_instances
+      end
+
+      context 'Car.all' do
+        let(:klass) { Car }
+        it_behaves_like :return_empty_transport_instances
+      end
+
+      context 'Transport.all' do
+        let(:klass) { Transport }
+        it_behaves_like :return_empty_transport_instances
+      end
+    end
+  end
+
   describe '#comparable' do
     let(:bike) { Bike.new }
     let(:other_bike) { Bike.new }
