@@ -1,7 +1,7 @@
 RSpec.describe Transport do
-  describe '#initialize' do
-    let(:transport_attributes) { %i[@max_weight @speed @available @location @delivery_cost @number_of_deliveries] }
+  let(:transport_attributes) { %i[@max_weight @speed @available @location @delivery_cost @number_of_deliveries] }
 
+  describe '#initialize' do
     context 'Bike' do
       subject { Bike.new }
       let(:transport_attributes) { super().concat([:@max_distance]) }
@@ -198,6 +198,232 @@ RSpec.describe Transport do
       context 'Transport.all' do
         let(:klass) { Transport }
         it_behaves_like :return_empty_transport_instances
+      end
+    end
+  end
+
+  describe '#custom_methods' do
+    shared_examples :has_all_custom_methods do
+      it 'must has all custom methods' do
+        custom_methods = transport_attributes.map { |attribute| "find_by_#{attribute.to_s.sub('@', '')}".to_sym }
+        custom_methods += transport_attributes.map { |attribute| "filter_by_#{attribute.to_s.sub('@', '')}".to_sym }
+        expect(klass.methods).to include(*custom_methods)
+      end
+    end
+
+    shared_examples :find_by_attribute_return_correct_transport do
+      it 'returns correct transport' do
+        transport_attributes.each do |attribute|
+          method_name = "find_by_#{attribute.to_s.sub('@', '')}"
+          instance_variable_value = expected_transport.instance_variable_get(attribute)
+
+          expect(
+            klass.public_send(method_name, instance_variable_value).instance_variable_get(attribute)
+          ).to eq instance_variable_value
+
+          expect(klass.public_send(method_name, instance_variable_value)).to be_a(klass)
+          expect(klass.public_send(method_name, instance_variable_value).to_s).to eq expected_transport.to_s
+        end
+      end
+    end
+
+    shared_examples :filter_by_attribute_return_correct_transport_collection do
+      it 'returns correct transport collection' do
+        transport_attributes.each do |attribute|
+          method_name = "filter_by_#{attribute.to_s.sub('@', '')}"
+          block = proc { |value| value == expected_transports.first.public_send(attribute.to_s.sub('@', '')) }
+          expect(klass.public_send(method_name, &block).count).to eq expected_transports.count
+          expect(klass.public_send(method_name, &block)).to instances_exact_match_array expected_transports
+        end
+      end
+    end
+
+    shared_examples :find_by_not_equal_value_return_nil do
+      it 'returns nil' do
+        transport_attributes.each do |attribute|
+          next if attribute == :@available
+
+          method_name = "find_by_#{attribute.to_s.sub('@', '')}"
+          instance_variable_value = expected_transport.instance_variable_get(attribute)
+
+          not_eq_value = case instance_variable_value
+                         when Integer then instance_variable_value + 1
+                         when String then "Not eq #{instance_variable_value}"
+                         when FalseClass, TrueClass then !attribute
+                         end
+
+          expect(klass.public_send(method_name, not_eq_value)).to be_nil
+        end
+      end
+    end
+
+    shared_examples :find_by_with_empty_instances_return_nil do
+      it 'returns nil' do
+        transport_attributes.each do |attribute|
+          method_name = "find_by_#{attribute.to_s.sub('@', '')}"
+          instance_variable_value = expected_transport.instance_variable_get(attribute)
+
+          klass.instance_variable_set(:@instances, [])
+
+          expect(klass.public_send(method_name, instance_variable_value)).to be_nil
+        end
+      end
+    end
+
+    shared_examples :filter_by_not_equal_value_return_empty_array do
+      it 'returns empty array' do
+        transport_attributes.each do |attribute|
+          next if attribute == :@available
+
+          method_name = "filter_by_#{attribute.to_s.sub('@', '')}"
+          instance_variable_value = expected_transports.first.public_send(attribute.to_s.sub('@', ''))
+          not_eq_value = case instance_variable_value
+                         when Integer then instance_variable_value + 1
+                         when String then "Not eq #{instance_variable_value}"
+                         when FalseClass, TrueClass then !attribute
+                         end
+          block = proc { |value| value == not_eq_value }
+          expect(klass.public_send(method_name, &block)).to be_a Array
+          expect(klass.public_send(method_name, &block)).to be_empty
+        end
+      end
+    end
+
+    shared_examples :filter_by_with_empty_instances_return_empty_array do
+      it 'returns empty array' do
+        transport_attributes.each do |attribute|
+          method_name = "filter_by_#{attribute.to_s.sub('@', '')}"
+          block = proc { |value| value == expected_transports.first.public_send(attribute.to_s.sub('@', '')) }
+          klass.instance_variable_set(:@instances, [])
+          expect(klass.public_send(method_name, &block)).to be_a Array
+          expect(klass.public_send(method_name, &block)).to be_empty
+        end
+      end
+    end
+
+    shared_context :stub_expected_transport_attributes do
+      before do
+        transport_attributes.each do |attribute|
+          instance_variable_value = expected_transport.instance_variable_get(attribute)
+          case instance_variable_value
+          when Integer
+            expected_transport.instance_variable_set(attribute, instance_variable_value + 1)
+          when String
+            expected_transport.instance_variable_set(attribute, "Test #{instance_variable_value}")
+          when FalseClass, TrueClass
+            expected_transport.instance_variable_set(attribute, !attribute)
+          end
+        end
+      end
+    end
+
+    shared_context :stub_expected_transport_collection_attributes do
+      before do
+        expected_transports.each do |expected_transport|
+          transport_attributes.each do |attribute|
+            instance_variable_value = expected_transport.instance_variable_get(attribute)
+            case instance_variable_value
+            when Integer
+              expected_transport.instance_variable_set(attribute, 1)
+            when String
+              expected_transport.instance_variable_set(attribute, 'Test location')
+            when FalseClass, TrueClass
+              expected_transport.instance_variable_set(attribute, !attribute)
+            end
+          end
+        end
+      end
+    end
+
+    before do
+      klass.instance_variable_set(:@instances, [])
+      (1..5).map { Car.new(registration_number: FFaker::Vehicle.vin) }
+      (1..5).map { Bike.new }
+    end
+
+    context 'Bike' do
+      let(:transport_attributes) { super().concat([:@max_distance]) }
+      let(:klass) { Bike }
+      let(:expected_transport) { klass.new }
+
+      let!(:expected_transports) { (1..5).map { klass.new } }
+
+      it_behaves_like :has_all_custom_methods
+
+      context 'find_by_{attribute}' do
+        include_context :stub_expected_transport_attributes
+        it_behaves_like :find_by_attribute_return_correct_transport
+        it_behaves_like :find_by_not_equal_value_return_nil
+        it_behaves_like :find_by_with_empty_instances_return_nil
+      end
+
+      context 'filter_by_{attribute}' do
+        include_context :stub_expected_transport_collection_attributes
+        it_behaves_like :filter_by_attribute_return_correct_transport_collection
+        it_behaves_like :filter_by_not_equal_value_return_empty_array
+        it_behaves_like :filter_by_with_empty_instances_return_empty_array
+      end
+    end
+
+    context 'Car' do
+      let(:transport_attributes) { super().concat([:@registration_number]) }
+      let(:klass) { Car }
+      let(:transport_params) { { registration_number: FFaker::Vehicle.vin } }
+      let(:expected_transport) { klass.new(transport_params) }
+
+      let!(:expected_transports) { (1..5).map { klass.new(transport_params) } }
+
+      it_behaves_like :has_all_custom_methods
+
+      context 'find_by_{attribute}' do
+        include_context :stub_expected_transport_attributes
+        it_behaves_like :find_by_attribute_return_correct_transport
+        it_behaves_like :find_by_not_equal_value_return_nil
+        it_behaves_like :find_by_with_empty_instances_return_nil
+      end
+
+      context 'filter_by_{attribute}' do
+        include_context :stub_expected_transport_collection_attributes
+        it_behaves_like :filter_by_attribute_return_correct_transport_collection
+        it_behaves_like :filter_by_not_equal_value_return_empty_array
+        it_behaves_like :filter_by_with_empty_instances_return_empty_array
+      end
+    end
+
+    context 'Transport' do
+      let(:klass) { Transport }
+
+      it_behaves_like :has_all_custom_methods
+
+      context 'find_by_{attribute}' do
+        context 'Bike' do
+          let(:expected_transport) { Bike.new }
+
+          include_context :stub_expected_transport_attributes
+          it_behaves_like :find_by_attribute_return_correct_transport
+          it_behaves_like :find_by_not_equal_value_return_nil
+          it_behaves_like :find_by_with_empty_instances_return_nil
+        end
+
+        context 'Car' do
+          let(:transport_params) { { registration_number: FFaker::Vehicle.vin } }
+          let(:expected_transport) { Car.new(transport_params) }
+
+          include_context :stub_expected_transport_attributes
+          it_behaves_like :find_by_attribute_return_correct_transport
+          it_behaves_like :find_by_not_equal_value_return_nil
+          it_behaves_like :find_by_with_empty_instances_return_nil
+        end
+      end
+
+      context 'filter_by_{attribute}' do
+        let(:transport_params) { { registration_number: FFaker::Vehicle.vin } }
+        let!(:expected_transports) { (1..5).map { Car.new(transport_params) } + (1..5).map { Bike.new } }
+
+        include_context :stub_expected_transport_collection_attributes
+        it_behaves_like :filter_by_attribute_return_correct_transport_collection
+        it_behaves_like :filter_by_not_equal_value_return_empty_array
+        it_behaves_like :filter_by_with_empty_instances_return_empty_array
       end
     end
   end

@@ -16,6 +16,7 @@ class Transport
     @delivery_cost = delivery_cost
     @number_of_deliveries = number_of_deliveries
     Transport.add_instance self
+    generate_custom_methods
   end
 
   class << self
@@ -60,5 +61,27 @@ class Transport
     return -1 if max_distance_for(self) < max_distance_for(other)
 
     0
+  end
+
+  private
+
+  def generate_custom_methods
+    instance_variables.each do |attribute|
+      attribute_name = attribute.to_s.sub('@', '')
+      generate_find_by_attribute_methods(attribute_name)
+      generate_filter_by_attribute_methods(attribute_name)
+    end
+  end
+
+  def generate_find_by_attribute_methods(attribute_name)
+    Transport.define_singleton_method "find_by_#{attribute_name}".to_sym do |value|
+      all.find { |transport| transport.public_send(attribute_name) == value }
+    end
+  end
+
+  def generate_filter_by_attribute_methods(attribute_name)
+    Transport.define_singleton_method "filter_by_#{attribute_name}".to_sym do |&block|
+      all.select { |transport| block.call(transport.public_send(attribute_name.to_sym)) }
+    end
   end
 end

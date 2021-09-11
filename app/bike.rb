@@ -4,11 +4,11 @@ class Bike < Transport
   @instances = []
 
   def initialize
+    @max_distance = BIKE_MAX_DISTANCE
     super(
       max_weight: BIKE_MAX_WEIGHT,
       speed: BIKE_SPEED,
       delivery_cost: BIKE_DELIVERY_COST
     )
-    @max_distance = BIKE_MAX_DISTANCE
   end
 end
