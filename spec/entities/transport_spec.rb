@@ -140,7 +140,7 @@ RSpec.describe Transport do
     end
 
     context 'when transport_instances without bikes' do
-      let!(:bike_instances) { [] }
+      let(:bike_instances) { [] }
 
       context 'Bike.all' do
         let(:klass) { Bike }
@@ -161,7 +161,7 @@ RSpec.describe Transport do
     end
 
     context 'when transport_instances without cars' do
-      let!(:car_instances) { [] }
+      let(:car_instances) { [] }
 
       context 'Bike.all' do
         let(:klass) { Bike }
@@ -182,8 +182,8 @@ RSpec.describe Transport do
     end
 
     context 'when empty transport_instances' do
-      let!(:bike_instances) { [] }
-      let!(:car_instances) { [] }
+      let(:bike_instances) { [] }
+      let(:car_instances) { [] }
 
       context 'Bike.all' do
         let(:klass) { Bike }
