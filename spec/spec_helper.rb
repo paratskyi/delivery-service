@@ -18,6 +18,7 @@ require 'simplecov'
 SimpleCov.start
 
 require_relative '../app/lib/dependencies'
+require_relative 'support/matchers'
 include ::CONST
 include TransportHelper
 

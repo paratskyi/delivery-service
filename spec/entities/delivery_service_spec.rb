@@ -240,10 +240,16 @@ RSpec.describe DeliveryService do
     let(:transport) { delivery_service.get_transport(delivery_params) }
 
     context 'when transport present' do
-      it 'toggle transport availability to false' do
+      it 'correct updates transport attributes' do
         expect(transport.available).to be true
+        expect(transport.number_of_deliveries).to eq 0
+        expect(transport.location).to eq 'In garage'
+
         subject
+
+        expect(transport.number_of_deliveries).to eq 1
         expect(transport.available).to be false
+        expect(transport.location).to eq 'On route'
       end
     end
 
